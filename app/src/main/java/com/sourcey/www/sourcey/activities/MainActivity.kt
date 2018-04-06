@@ -74,8 +74,11 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
 
         // If recovering from an event such as a screen rotation.
         if (savedInstanceState != null) {
-            fileContent = savedInstanceState.getString("fileContent", "")
-            updateCodeView()
+            val lastFile = savedInstanceState.getString("lastFile", "")
+            if (lastFile.isNotEmpty()) {
+                loadSourceFile(lastFile)
+                updateCodeView()
+            }
         }
 
     }
@@ -207,7 +210,9 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         val languageString = "Detected language: " + language + " relevance: " + relevance
         d { languageString }
         Toast.makeText(this, languageString, Toast.LENGTH_SHORT).show();
-        codeView.setLanguage(language).apply()
+        launch(UI) {
+            codeView.setLanguage(language).apply()
+        }
     }
 
     override fun onFontSizeChanged(sizeInPx: Int) {
@@ -299,7 +304,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
 
     public override fun onSaveInstanceState(savedInstanceState: Bundle) {
         super.onSaveInstanceState(savedInstanceState)
-        savedInstanceState.putString("fileContent", fileContent)
+        savedInstanceState.putString("lastFile", prefManager.getString("lastFile", ""))
     }
 
 }

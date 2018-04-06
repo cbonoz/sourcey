@@ -50,7 +50,7 @@ class SettingsDialogFragment : DialogFragment() {
             override fun validate(textView: TextView, text: String) {
                 /* Validation code here */
                 val value = text.toFloatOrNull()
-                if (value == null || value < 1 || value > 32) {
+                if (value != null && (value < 0 || value > 32)) {
                     Toast.makeText(activity, "Size should be between 1 and 32", Toast.LENGTH_SHORT).show()
                     fontSizeText.setText(oldSettings.fontSize.toString())
                 }
