@@ -18,6 +18,7 @@
     <string name="settings">Settings</string>
     <string name="saved_settings">Saved Settings</string>
     <string name="applying_syntax">Formatting...</string>
+    <string name="applying_syntax_large">Formatting, large files (> 1MB) may take a while...</string>
     <string name="loading_file">Loading File...</string>
     <string name="about">About Sourcey</string>
 </resources>

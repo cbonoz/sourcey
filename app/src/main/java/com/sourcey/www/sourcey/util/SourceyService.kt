@@ -23,7 +23,7 @@ class SourceyService(private val prefManager: PrefManager) {
     }
 
     companion object {
-
+        val LARGE_FILE_THRESHOLD = 1000000
     }
 
 }

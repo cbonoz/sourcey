@@ -26,6 +26,7 @@ import com.github.ajalt.timberkt.Timber.e
 import com.github.angads25.filepicker.model.DialogConfigs
 import com.github.angads25.filepicker.model.DialogProperties
 import com.github.angads25.filepicker.view.FilePickerDialog
+import com.sourcey.www.sourcey.R.id.codeView
 import com.sourcey.www.sourcey.SourceyApplication
 import com.sourcey.www.sourcey.dialogs.SettingsDialogFragment
 import com.sourcey.www.sourcey.util.PrefManager
@@ -162,7 +163,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
             codeView.setOnHighlightListener(this)
                     .setTheme(Theme.AGATE)
                     .setCode(fileContent)
-                    .setLanguage(Language.JAVA)
+                    .setLanguage(Language.AUTO)
                     .setWrapLine(settings.wrapLine)
                     .setFontSize(settings.fontSize)
                     .setShowLineNumber(settings.lineNumber)
@@ -184,18 +185,21 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
 
     override fun onStartCodeHighlight() {
         d { "startCodeHighlight " }
-        if (mProgressDialog == null) {
-            mProgressDialog = ProgressDialog.show(this, null, getString(R.string.applying_syntax), true);
+        val message: String
+        if (fileContent.length > SourceyService.LARGE_FILE_THRESHOLD) {
+            message = getString(R.string.applying_syntax_large)
         } else {
-            mProgressDialog!!.setMessage(getString(R.string.applying_syntax))
+            message = getString(R.string.applying_syntax)
         }
+
+        mProgressDialog = ProgressDialog.show(this, null, message, true);
     }
 
     override fun onLanguageDetected(language: Language?, relevance: Int) {
-        val languageString = "onLanguageDetected: language: " + language + " relevance: " + relevance
+        val languageString = "Detected language: " + language + " relevance: " + relevance
         d { languageString }
         Toast.makeText(this, languageString, Toast.LENGTH_SHORT).show();
-        codeView.setLanguage(language)
+        codeView.setLanguage(language).apply()
     }
 
     override fun onFontSizeChanged(sizeInPx: Int) {
@@ -212,9 +216,9 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         mProgressDialog = null
     }
 
-    /*
-     * File permission request below.
-     */
+/*
+ * File permission request below.
+ */
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         when (requestCode) {
