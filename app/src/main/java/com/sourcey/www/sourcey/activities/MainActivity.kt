@@ -1,7 +1,6 @@
 package com.sourcey.www.sourcey.activities
 
 import android.os.Bundle
-import android.app.Activity
 import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.pm.PackageManager
@@ -26,7 +25,6 @@ import com.github.ajalt.timberkt.Timber.e
 import com.github.angads25.filepicker.model.DialogConfigs
 import com.github.angads25.filepicker.model.DialogProperties
 import com.github.angads25.filepicker.view.FilePickerDialog
-import com.sourcey.www.sourcey.R.id.codeView
 import com.sourcey.www.sourcey.SourceyApplication
 import com.sourcey.www.sourcey.dialogs.SettingsDialogFragment
 import com.sourcey.www.sourcey.util.PrefManager
@@ -36,8 +34,8 @@ import java.io.File
 import java.nio.charset.Charset
 import javax.inject.Inject
 import com.takusemba.spotlight.SimpleTarget
-import kotlinx.android.synthetic.main.dialog_info.*
 import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
 
@@ -77,7 +75,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
             val lastFile = savedInstanceState.getString("lastFile", "")
             if (lastFile.isNotEmpty()) {
                 loadSourceFile(lastFile)
-                updateCodeView()
+                updateCodeView(true)
             }
         }
 
@@ -129,6 +127,8 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         loadSourceFile(File(path))
     }
 
+    private var job: Job? = null
+
     private fun loadSourceFile(pathFile: File) {
         d { "loadSourceFile ${pathFile}" }
         noFileText.visibility = View.GONE
@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         }
 
         mProgressDialog = ProgressDialog.show(this, null, message)
-        val job = launch(CommonPool) {
+        job = launch(CommonPool) {
             try {
                 fileContent = pathFile.bufferedReader(Charset.defaultCharset()).use {
                     it.readText()
@@ -157,23 +157,41 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
 
             prefManager.saveString("lastFile", pathFile.absolutePath)
             launch(UI) {
-                updateCodeView()
+                updateCodeView(true)
             }
 
         }
     }
 
-    public fun updateCodeView() {
+    fun updateCodeView(refreshCode: Boolean) {
         if (fileContent.isNotEmpty()) {
             noFileText.visibility = View.GONE
             codeView.visibility = View.VISIBLE
 
             val settings = sourceyService.getSettings()
+            val language: Language?
+            if (settings.languageDetection) {
+                language = Language.AUTO
+            } else {
+                language = Language.VIM
+            }
+
+            val themes = sourceyService.getThemes()
+
+            val theme: Theme
+            if (settings.themeIndex < themes.size) {
+                theme = themes.get(settings.themeIndex)
+            } else {
+                theme = Theme.AGATE
+            }
+
+            if (refreshCode) {
+                codeView.setCode(fileContent)
+            }
 
             codeView.setOnHighlightListener(this)
-                    .setTheme(Theme.AGATE)
-                    .setCode(fileContent)
-                    .setLanguage(Language.AUTO)
+                    .setTheme(theme)
+                    .setLanguage(language)
                     .setWrapLine(settings.wrapLine)
                     .setFontSize(settings.fontSize)
                     .setShowLineNumber(settings.lineNumber)
@@ -184,6 +202,11 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
             codeView.visibility = View.GONE
         }
 
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        job?.cancel()
     }
 
     private var mProgressDialog: ProgressDialog? = null
@@ -210,8 +233,12 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         val languageString = "Detected language: " + language + " relevance: " + relevance
         d { languageString }
         Toast.makeText(this, languageString, Toast.LENGTH_SHORT).show();
-        launch(UI) {
-            codeView.setLanguage(language).apply()
+
+        if (sourceyService.getSettings().languageDetection) {
+            codeView.setLanguage(language)
+            launch(UI) {
+                codeView.apply()
+            }
         }
     }
 
