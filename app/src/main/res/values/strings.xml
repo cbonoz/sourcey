@@ -18,8 +18,15 @@
     <string name="settings">Settings</string>
     <string name="saved_settings">Saved Settings</string>
     <string name="applying_syntax">Formatting…</string>
-    <string name="applying_syntax_large">Formatting, large file may take a while…</string>
+    <string name="applying_syntax_large">Formatting file in background…</string>
+    <string name="applying_syntax_done">Formatting Complete</string>
     <string name="loading_file_large">Loading File, large file may take a while…</string>
     <string name="loading_file">Loading File…</string>
     <string name="about">About Sourcey</string>
+    <string name="enable_line_wrap">Enable Line Wrap</string>
+    <string name="show_line_numbers">Show Line Numbers</string>
+    <string name="enable_zoom">Enable Zoom</string>
+    <string name="language_detection">Language Detection</string>
+    <string name="font_size">Font Size</string>
+    <string name="theme">Theme</string>
 </resources>

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.pm.PackageManager
+import android.support.design.widget.Snackbar
 import com.sourcey.www.sourcey.R
 
 import kotlinx.android.synthetic.main.activity_main.*
@@ -65,24 +66,22 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         setSupportActionBar(findViewById(R.id.my_toolbar))
         my_toolbar.inflateMenu(R.menu.menu);
 
-        if (prefManager.getBoolean("firstLaunch", true)) {
+        if (prefManager.getBoolean(SourceyService.FIRST_LAUNCH, true)) {
             mainLayout.viewTreeObserver.addOnGlobalLayoutListener(this)
-            prefManager.saveBoolean("firstLaunch", false)
+            prefManager.saveBoolean(SourceyService.FIRST_LAUNCH, false)
         }
 
         // If recovering from an event such as a screen rotation.
         if (savedInstanceState != null) {
-            val lastFile = savedInstanceState.getString("lastFile", "")
+            val lastFile = savedInstanceState.getString(SourceyService.LAST_FILE, "")
             if (lastFile.isNotEmpty()) {
                 loadSourceFile(lastFile)
                 updateCodeView(true)
             }
         }
-
     }
 
     private fun addSpotlight() {
-
         val target = SimpleTarget.Builder(this@MainActivity).setPoint(findViewById<View>(R.id.action_load))
                 .setRadius(200f)
                 .setTitle(getString(R.string.spotlight_title))
@@ -133,7 +132,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         d { "loadSourceFile ${pathFile}" }
         noFileText.visibility = View.GONE
         val message: String
-        if (fileContent.length > SourceyService.LARGE_FILE_THRESHOLD) {
+        if (pathFile.length() > SourceyService.LARGE_FILE_THRESHOLD) {
             message = getString(R.string.loading_file_large)
         } else {
             message = getString(R.string.loading_file)
@@ -146,6 +145,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
                     it.readText()
                 }
                 d { "read fileContent: ${fileContent.length} bytes" }
+                mProgressDialog?.dismiss()
             } catch (e: Exception) {
                 launch(UI) {
                     mProgressDialog?.dismiss()
@@ -201,7 +201,6 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
             noFileText.visibility = View.VISIBLE
             codeView.visibility = View.GONE
         }
-
     }
 
     override fun onDestroy() {
@@ -215,18 +214,12 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
      * Codeview methods below.
      * https://github.com/tiagohm/CodeView
      */
-
     override fun onStartCodeHighlight() {
         d { "startCodeHighlight " }
         val message: String
         if (fileContent.length > SourceyService.LARGE_FILE_THRESHOLD) {
-            message = getString(R.string.applying_syntax_large)
-        } else {
-            message = getString(R.string.applying_syntax)
+            showSnackbar(getString(R.string.applying_syntax_large))
         }
-
-        mProgressDialog?.dismiss()
-        mProgressDialog = ProgressDialog.show(this, null, message, true);
     }
 
     override fun onLanguageDetected(language: Language?, relevance: Int) {
@@ -252,14 +245,12 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
 
     override fun onFinishCodeHighlight() {
         d { "finishCodeHighlight " }
-        mProgressDialog?.dismiss();
-        mProgressDialog = null
+        showSnackbar(getString(R.string.applying_syntax_done))
     }
 
-/*
- * File permission request below.
- */
-
+    /*
+     * File permission request below.
+     */
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         when (requestCode) {
             FilePickerDialog.EXTERNAL_READ_PERMISSION_GRANT -> {
@@ -294,7 +285,6 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
             launchInfoDialog()
             true
         }
-
         else -> {
             // If we got here, the user's action was not recognized.
             // Invoke the superclass to handle it.
@@ -326,12 +316,17 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
             val lastFileLoadedHeader = dialog.findViewById<TextView>(R.id.lastFileLoadedHeader)
             lastFileLoadedHeader.visibility = View.GONE
         }
-
     }
 
     public override fun onSaveInstanceState(savedInstanceState: Bundle) {
         super.onSaveInstanceState(savedInstanceState)
-        savedInstanceState.putString("lastFile", prefManager.getString("lastFile", ""))
+        savedInstanceState.putString(SourceyService.LAST_FILE, prefManager.getString("lastFile", ""))
+    }
+
+    private fun showSnackbar(message: String) {
+        val snackbar = Snackbar.make(mainLayout, message, Snackbar.LENGTH_SHORT);
+        snackbar.show()
+
     }
 
 }

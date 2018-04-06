@@ -34,12 +34,7 @@ class SourceyApplication : Application() {
         app = this
     }
 
-    override fun attachBaseContext(base: Context) {
-        super.attachBaseContext(base)
-    }
-
     companion object {
-
         private var app: SourceyApplication? = null
 
         val injectionComponent: InjectionComponent

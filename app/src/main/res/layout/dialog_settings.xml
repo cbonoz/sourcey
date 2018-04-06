@@ -23,7 +23,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/settingItem"
-            android:text="Enable Line Wrap"/>
+            android:text="@string/enable_line_wrap"/>
 
 
     <android.support.v7.widget.SwitchCompat
@@ -31,24 +31,24 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/settingItem"
-            android:text="Show Line Numbers"/>
+            android:text="@string/show_line_numbers"/>
 
     <android.support.v7.widget.SwitchCompat
             android:id="@+id/zoomSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/settingItem"
-            android:text="Enable Zoom"/>
+            android:text="@string/enable_zoom"/>
 
     <android.support.v7.widget.SwitchCompat
             android:id="@+id/languageSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/settingItem"
-            android:text="Language Detection"/>
+            android:text="@string/language_detection"/>
 
     <TextView
-            android:text="Font Size"
+            android:text="@string/font_size"
             android:id="@+id/fontSizeTextView"
             style="@style/settingItem"
             android:layout_width="wrap_content"
@@ -62,7 +62,7 @@
             android:layout_height="wrap_content"/>
 
     <TextView
-            android:text="Theme"
+            android:text="@string/theme"
             style="@style/settingItem"
             android:id="@+id/themeTextView"
             android:layout_width="wrap_content"

@@ -1,6 +1,5 @@
 package com.sourcey.www.sourcey.util
 
-import br.tiagohm.codeview.Language
 import br.tiagohm.codeview.Theme
 import java.util.*
 
@@ -24,7 +23,7 @@ class SourceyService(private val prefManager: PrefManager) {
         return prefManager.getJson(
                 "settings",
                 Settings::class.java,
-                Settings(true, true, true, true, 0, 14f)
+                Settings(true, true, true, false, 0, 14f)
         )
     }
 
@@ -36,7 +35,9 @@ class SourceyService(private val prefManager: PrefManager) {
     }
 
     companion object {
-        val LARGE_FILE_THRESHOLD = 250000
+        val LARGE_FILE_THRESHOLD = 200000L
+        val LAST_FILE = "lastFile"
+        val FIRST_LAUNCH = "firstLaunch"
     }
 
 }
