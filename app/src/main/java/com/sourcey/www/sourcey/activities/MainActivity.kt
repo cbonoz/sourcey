@@ -129,7 +129,14 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
     private fun loadSourceFile(pathFile: File) {
         d { "loadSourceFile ${pathFile}" }
         noFileText.visibility = View.GONE
-        mProgressDialog = ProgressDialog.show(this, null, getString(R.string.loading_file))
+        val message: String
+        if (fileContent.length > SourceyService.LARGE_FILE_THRESHOLD) {
+            message = getString(R.string.loading_file_large)
+        } else {
+            message = getString(R.string.loading_file)
+        }
+
+        mProgressDialog = ProgressDialog.show(this, null, message)
         val job = launch(CommonPool) {
             try {
                 fileContent = pathFile.bufferedReader(Charset.defaultCharset()).use {
