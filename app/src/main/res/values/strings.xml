@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Sourcey</string>
+    <string name="slogan">Source code viewer for Android</string>
+    <string name="main_activity">Sourcey Viewer</string>
+    <string name="title_activity_main">Sourcey Viewer</string>
+    <string name="file_select_help">Sourcey:\nClick the Plus Icon Below to load a file</string>
+    <string name="permission_required">Permission is Required for getting list of files</string>
+    <string name="loading">Loading...</string>
+    <string name="spotlight_description">Click the button here to load your first source file</string>
+    <string name="spotlight_title">Welcome to Sourcey!</string>
+    <string name="file_dialog_title">Load a Source or Text File</string>
+</resources>
