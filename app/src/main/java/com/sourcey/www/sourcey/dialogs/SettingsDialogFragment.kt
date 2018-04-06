@@ -67,7 +67,7 @@ class SettingsDialogFragment : DialogFragment() {
         languageSwitch.isChecked = oldSettings.languageDetection
         themeSpinner.attachDataSource(sourceyService.getThemeNames())
         themeSpinner.selectedIndex = oldSettings.themeIndex
-        themeSpinner.dropDownListPaddingBottom = 3
+        themeSpinner.dropDownListPaddingBottom = 5
 
         builder.setView(view).setPositiveButton(getString(R.string.save), { dialog, id ->
 
