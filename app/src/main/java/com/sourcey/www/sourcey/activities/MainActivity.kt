@@ -145,7 +145,6 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
                     it.readText()
                 }
                 d { "read fileContent: ${fileContent.length} bytes" }
-                mProgressDialog?.dismiss()
             } catch (e: Exception) {
                 launch(UI) {
                     mProgressDialog?.dismiss()
@@ -157,6 +156,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
 
             prefManager.saveString("lastFile", pathFile.absolutePath)
             launch(UI) {
+                mProgressDialog?.dismiss()
                 updateCodeView(true)
             }
 
@@ -223,14 +223,13 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
     }
 
     override fun onLanguageDetected(language: Language?, relevance: Int) {
-        val languageString = "Detected language: " + language + " relevance: " + relevance
+        val languageString = "Detected language: ${language}"
         d { languageString }
         Toast.makeText(this, languageString, Toast.LENGTH_SHORT).show();
 
         if (sourceyService.getSettings().languageDetection) {
-            codeView.setLanguage(language)
             launch(UI) {
-                codeView.apply()
+                codeView.setLanguage(language).apply()
             }
         }
     }
