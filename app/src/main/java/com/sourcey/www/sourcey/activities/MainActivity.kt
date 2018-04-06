@@ -142,7 +142,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
                 fileContent = pathFile.bufferedReader(Charset.defaultCharset()).use {
                     it.readText()
                 }
-                d { "read fileContent: ${fileContent}" }
+                d { "read fileContent: ${fileContent.length} bytes" }
             } catch (e: Exception) {
                 launch(UI) {
                     mProgressDialog?.dismiss()
@@ -199,6 +199,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
             message = getString(R.string.applying_syntax)
         }
 
+        mProgressDialog?.dismiss()
         mProgressDialog = ProgressDialog.show(this, null, message, true);
     }
 
