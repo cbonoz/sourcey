@@ -2,6 +2,7 @@ package com.sourcey.www.sourcey.activities
 
 import android.os.Bundle
 import android.app.Activity
+import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.pm.PackageManager
 import com.sourcey.www.sourcey.R
@@ -9,9 +10,14 @@ import com.sourcey.www.sourcey.R
 import kotlinx.android.synthetic.main.activity_main.*
 import android.widget.Toast
 import android.support.v4.content.ContextCompat
+import android.support.v7.app.AppCompatActivity
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewTreeObserver
 import android.view.animation.DecelerateInterpolator
+import android.widget.Button
+import android.widget.TextView
 import br.tiagohm.codeview.CodeView
 import br.tiagohm.codeview.Language
 import br.tiagohm.codeview.Theme
@@ -21,18 +27,21 @@ import com.github.angads25.filepicker.model.DialogConfigs
 import com.github.angads25.filepicker.model.DialogProperties
 import com.github.angads25.filepicker.view.FilePickerDialog
 import com.sourcey.www.sourcey.SourceyApplication
+import com.sourcey.www.sourcey.dialogs.SettingsDialogFragment
 import com.sourcey.www.sourcey.util.PrefManager
+import com.sourcey.www.sourcey.util.SourceyService
 import com.takusemba.spotlight.Spotlight
 import java.io.File
 import java.nio.charset.Charset
 import javax.inject.Inject
 import com.takusemba.spotlight.SimpleTarget
+import kotlinx.android.synthetic.main.dialog_info.*
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
 
 
-class MainActivity : Activity(), CodeView.OnHighlightListener, ViewTreeObserver.OnGlobalLayoutListener {
+class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTreeObserver.OnGlobalLayoutListener {
 
     override fun onGlobalLayout() {
         val lastFile = prefManager.getString("lastFile", null)
@@ -44,6 +53,8 @@ class MainActivity : Activity(), CodeView.OnHighlightListener, ViewTreeObserver.
 
     @Inject
     lateinit var prefManager: PrefManager
+    @Inject
+    lateinit var sourceyService: SourceyService
 
     private var fileContent: String = ""
 
@@ -52,33 +63,32 @@ class MainActivity : Activity(), CodeView.OnHighlightListener, ViewTreeObserver.
         setContentView(R.layout.activity_main)
         SourceyApplication.injectionComponent.inject(this)
 
-        val lastFile = prefManager.getString("lastFile", null)
-        if (lastFile != null) {
-            loadSourceFile(lastFile)
-        } else {
-            updateCodeView()
-        }
-
-        fab.setOnClickListener {
-            launchFileDialog()
-        }
+        setSupportActionBar(findViewById(R.id.my_toolbar))
+        my_toolbar.inflateMenu(R.menu.menu);
 
         if (prefManager.getBoolean("firstLaunch", true)) {
             mainLayout.viewTreeObserver.addOnGlobalLayoutListener(this)
             prefManager.saveBoolean("firstLaunch", false)
         }
+
+        // If recovering from an event such as a screen rotation.
+        if (savedInstanceState != null) {
+            fileContent = savedInstanceState.getString("fileContent", "")
+            updateCodeView()
+        }
+
     }
 
     private fun addSpotlight() {
 
-        val target = SimpleTarget.Builder(this@MainActivity).setPoint(fab)
+        val target = SimpleTarget.Builder(this@MainActivity).setPoint(findViewById<View>(R.id.action_load))
                 .setRadius(200f)
                 .setTitle(getString(R.string.spotlight_title))
                 .setDescription(getString(R.string.spotlight_description))
                 .build()
 
-        Spotlight.with(this).setOverlayColor(ContextCompat.getColor(this, R.color.material_grey_900))
-                .setDuration(2000L)
+        Spotlight.with(this).setOverlayColor(ContextCompat.getColor(this, R.color.md_blue_grey_500))
+                .setDuration(1000L)
                 .setAnimation(DecelerateInterpolator(2f))
                 .setTargets(target)
                 .setClosedOnTouchedOutside(true)
@@ -117,6 +127,8 @@ class MainActivity : Activity(), CodeView.OnHighlightListener, ViewTreeObserver.
 
     private fun loadSourceFile(pathFile: File) {
         d { "loadSourceFile ${pathFile}" }
+        noFileText.visibility = View.GONE
+        mProgressDialog = ProgressDialog.show(this, null, getString(R.string.loading_file))
         val job = launch(CommonPool) {
             try {
                 fileContent = pathFile.bufferedReader(Charset.defaultCharset()).use {
@@ -125,6 +137,7 @@ class MainActivity : Activity(), CodeView.OnHighlightListener, ViewTreeObserver.
                 d { "read fileContent: ${fileContent}" }
             } catch (e: Exception) {
                 launch(UI) {
+                    mProgressDialog?.dismiss()
                     val errorMessage = "Problem Reading file. ${e.localizedMessage}"
                     e { errorMessage }
                     Toast.makeText(this@MainActivity, errorMessage, Toast.LENGTH_SHORT).show()
@@ -139,24 +152,25 @@ class MainActivity : Activity(), CodeView.OnHighlightListener, ViewTreeObserver.
         }
     }
 
-    private fun updateCodeView() {
+    public fun updateCodeView() {
         if (fileContent.isNotEmpty()) {
             noFileText.visibility = View.GONE
             codeView.visibility = View.VISIBLE
+
+            val settings = sourceyService.getSettings()
 
             codeView.setOnHighlightListener(this)
                     .setTheme(Theme.AGATE)
                     .setCode(fileContent)
                     .setLanguage(Language.JAVA)
-                    .setWrapLine(true)
-                    .setFontSize(14F)
-                    .setZoomEnabled(true)
-                    .setShowLineNumber(true)
-                    .setWrapLine(true)
+                    .setWrapLine(settings.wrapLine)
+                    .setFontSize(settings.fontSize)
+                    .setShowLineNumber(settings.lineNumber)
+                    .setZoomEnabled(settings.zoomEnabled)
                     .apply();
         } else {
             noFileText.visibility = View.VISIBLE
-            codeView.visibility = View.VISIBLE
+            codeView.visibility = View.GONE
         }
 
     }
@@ -170,7 +184,11 @@ class MainActivity : Activity(), CodeView.OnHighlightListener, ViewTreeObserver.
 
     override fun onStartCodeHighlight() {
         d { "startCodeHighlight " }
-        mProgressDialog = ProgressDialog.show(this, null, getString(R.string.loading), true);
+        if (mProgressDialog == null) {
+            mProgressDialog = ProgressDialog.show(this, null, getString(R.string.applying_syntax), true);
+        } else {
+            mProgressDialog!!.setMessage(getString(R.string.applying_syntax))
+        }
     }
 
     override fun onLanguageDetected(language: Language?, relevance: Int) {
@@ -191,6 +209,7 @@ class MainActivity : Activity(), CodeView.OnHighlightListener, ViewTreeObserver.
     override fun onFinishCodeHighlight() {
         d { "finishCodeHighlight " }
         mProgressDialog?.dismiss();
+        mProgressDialog = null
     }
 
     /*
@@ -208,6 +227,67 @@ class MainActivity : Activity(), CodeView.OnHighlightListener, ViewTreeObserver.
                 }
             }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu, menu)
+        return true
+    }
+
+
+    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+        R.id.action_settings -> {
+            val newFragment = SettingsDialogFragment()
+            newFragment.show(supportFragmentManager, "settings")
+            true
+        }
+        R.id.action_load -> {
+            launchFileDialog()
+            true
+        }
+        R.id.action_info -> {
+            launchInfoDialog()
+            true
+        }
+
+        else -> {
+            // If we got here, the user's action was not recognized.
+            // Invoke the superclass to handle it.
+            super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun launchInfoDialog() {
+        val dialog = Dialog(this); // Context, this, etc.
+        dialog.setContentView(R.layout.dialog_info);
+        dialog.setTitle(getString(R.string.about));
+        dialog.show();
+        dialog.findViewById<Button>(R.id.infoButton).setOnClickListener {
+            dialog.dismiss()
+        }
+
+        val lastFile = prefManager.getString("lastFile", null)
+        if (lastFile != null) {
+            val infoString = StringBuilder().append("File: ${lastFile}").append("\n")
+            if (codeView.lineCount > 0) {
+                infoString.append("Lines: ${codeView.lineCount}").append("\n")
+            }
+            if (codeView.language != null) {
+                infoString.append("Language Detected: ${codeView.language}").append("\n")
+            }
+            val fileInfoText = dialog.findViewById<TextView>(R.id.fileInfoText)
+            fileInfoText.setText(infoString.toString())
+        } else {
+            val lastFileLoadedHeader = dialog.findViewById<TextView>(R.id.lastFileLoadedHeader)
+            lastFileLoadedHeader.visibility = View.GONE
+        }
+
+    }
+
+    public override fun onSaveInstanceState(savedInstanceState: Bundle) {
+        super.onSaveInstanceState(savedInstanceState)
+        savedInstanceState.putString("fileContent", fileContent)
     }
 
 }

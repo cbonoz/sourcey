@@ -1,6 +1,5 @@
 package com.sourcey.www.sourcey.util
 
-import com.sourcey.www.sourcey.BuildConfig
 import java.util.*
 
 class SourceyService(private val prefManager: PrefManager) {
@@ -9,6 +8,18 @@ class SourceyService(private val prefManager: PrefManager) {
 
     fun rand(from: Int, to: Int): Int {
         return random.nextInt(to - from) + from
+    }
+
+    fun saveSettings(settings: Settings) {
+        prefManager.saveJson("settings", settings)
+    }
+
+    fun getSettings(): Settings {
+        return prefManager.getJson(
+                "settings",
+                Settings::class.java,
+                Settings(true, true, true,14f)
+        )
     }
 
     companion object {

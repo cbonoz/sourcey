@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:padding="10dp"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+
+    <TextView
+            android:fontFamily="cursive"
+            android:id="@+id/dialog_title"
+            android:textSize="@dimen/med_text"
+            android:text="@string/app_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"/>
+
+    <TextView
+            android:id="@+id/dialog_info"
+            android:layout_width="match_parent"
+            android:text="@string/app_info"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="25dp"
+            android:padding="10dp"/>
+
+    <TextView
+            android:text="Last File Loaded:"
+            android:id="@+id/lastFileLoadedHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"/>
+
+
+    <TextView
+            android:id="@+id/fileInfoText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"/>
+
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp">
+
+        <View
+                android:id="@+id/left_space"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.50"
+                android:background="@color/textColorPrimary"/>
+
+        <Button
+                android:id="@+id/infoButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.50"
+                android:textColor="@color/textColorPrimary"
+                android:text="Ok"
+                android:background="@color/colorPrimaryDark"/>
+    </LinearLayout>
+
+</LinearLayout>

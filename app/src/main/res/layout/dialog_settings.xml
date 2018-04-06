@@ -1,0 +1,53 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_gravity="center"
+              android:gravity="center"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+
+    <TextView
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scaleType="center"
+            android:textSize="@dimen/med_text"
+            android:text="@string/settings"
+            android:fontFamily="cursive"
+            android:background="#FFFFBB33"
+            android:contentDescription="@string/app_name"/>
+
+
+    <android.support.v7.widget.SwitchCompat
+            android:id="@+id/wrapSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/settingItem"
+            android:text="Enable Line Wrap"/>
+
+
+    <android.support.v7.widget.SwitchCompat
+            android:id="@+id/lineSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/settingItem"
+            android:text="Show Line Numbers"/>
+
+    <android.support.v7.widget.SwitchCompat
+            android:id="@+id/zoomSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/settingItem"
+            android:text="Enable Zoom"/>
+
+
+    <EditText
+            android:inputType="number"
+            android:hint="Font Size"
+            style="@style/settingItem"
+            android:id="@+id/fontSizeText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+
+</LinearLayout>
