@@ -2,7 +2,6 @@ package com.sourcey.www.sourcey.activities
 
 import android.os.Bundle
 import android.app.Dialog
-import android.app.ProgressDialog
 import android.content.pm.PackageManager
 import android.support.design.widget.Snackbar
 import com.sourcey.www.sourcey.R
@@ -26,6 +25,7 @@ import com.github.ajalt.timberkt.Timber.e
 import com.github.angads25.filepicker.model.DialogConfigs
 import com.github.angads25.filepicker.model.DialogProperties
 import com.github.angads25.filepicker.view.FilePickerDialog
+import com.github.ybq.android.spinkit.SpinKitView
 import com.sourcey.www.sourcey.SourceyApplication
 import com.sourcey.www.sourcey.dialogs.SettingsDialogFragment
 import com.sourcey.www.sourcey.util.PrefManager
@@ -63,6 +63,8 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         setContentView(R.layout.activity_main)
         SourceyApplication.injectionComponent.inject(this)
 
+        loadingSpinner = findViewById(R.id.loadingSpinner)
+
         setSupportActionBar(findViewById(R.id.my_toolbar))
         my_toolbar.inflateMenu(R.menu.menu);
 
@@ -97,6 +99,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
     }
 
     private var dialog: FilePickerDialog? = null
+    private var loadingSpinner: SpinKitView? = null
 
     private fun launchFileDialog() {
         d { "launchFileDialog" }
@@ -131,14 +134,8 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
     private fun loadSourceFile(pathFile: File) {
         d { "loadSourceFile ${pathFile}" }
         noFileText.visibility = View.GONE
-        val message: String
-        if (pathFile.length() > SourceyService.LARGE_FILE_THRESHOLD) {
-            message = getString(R.string.loading_file_large)
-        } else {
-            message = getString(R.string.loading_file)
-        }
+        loadingSpinner!!.visibility = View.VISIBLE
 
-        mProgressDialog = ProgressDialog.show(this, null, message)
         job = launch(CommonPool) {
             try {
                 fileContent = pathFile.bufferedReader(Charset.defaultCharset()).use {
@@ -147,7 +144,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
                 d { "read fileContent: ${fileContent.length} bytes" }
             } catch (e: Exception) {
                 launch(UI) {
-                    mProgressDialog?.dismiss()
+                    loadingSpinner!!.visibility = View.INVISIBLE
                     val errorMessage = "Problem Reading file. ${e.localizedMessage}"
                     e { errorMessage }
                     Toast.makeText(this@MainActivity, errorMessage, Toast.LENGTH_SHORT).show()
@@ -156,7 +153,6 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
 
             prefManager.saveString("lastFile", pathFile.absolutePath)
             launch(UI) {
-                mProgressDialog?.dismiss()
                 updateCodeView(true)
             }
 
@@ -167,6 +163,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         if (fileContent.isNotEmpty()) {
             noFileText.visibility = View.GONE
             codeView.visibility = View.VISIBLE
+            loadingSpinner!!.visibility = View.INVISIBLE
 
             val settings = sourceyService.getSettings()
             val language: Language?
@@ -200,6 +197,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         } else {
             noFileText.visibility = View.VISIBLE
             codeView.visibility = View.GONE
+            loadingSpinner!!.visibility = View.INVISIBLE
         }
     }
 
@@ -208,15 +206,13 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         job?.cancel()
     }
 
-    private var mProgressDialog: ProgressDialog? = null
-
     /*
      * Codeview methods below.
      * https://github.com/tiagohm/CodeView
      */
     override fun onStartCodeHighlight() {
+        loadingSpinner!!.visibility = View.INVISIBLE
         d { "startCodeHighlight " }
-        val message: String
         if (fileContent.length > SourceyService.LARGE_FILE_THRESHOLD) {
             showSnackbar(getString(R.string.applying_syntax_large))
         }

@@ -1,15 +1,12 @@
 package com.sourcey.www.sourcey
 
 import android.app.Application
-import android.content.Context
-import android.util.Log
 import com.github.ajalt.timberkt.Timber
 import com.github.ajalt.timberkt.d
 
 import com.sourcey.www.sourcey.injection.DaggerInjectionComponent
 import com.sourcey.www.sourcey.injection.InjectionComponent
 import com.sourcey.www.sourcey.injection.SourceyModule
-import io.github.kbiakov.codeview.classifier.CodeProcessor
 import timber.log.Timber.DebugTree
 
 
