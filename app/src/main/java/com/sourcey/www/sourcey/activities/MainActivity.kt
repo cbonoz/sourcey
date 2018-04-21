@@ -201,10 +201,15 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         job?.cancel()
     }
 
+    /*
+     * Call function aggressively to ensure user does not get stuck in a perpetual loading screen.
+     */
     private fun showCodeView() {
-        noFileText.visibility = View.GONE
-        codeView.visibility = View.VISIBLE
-        loadingSpinner.visibility = View.INVISIBLE
+        if (codeView.visibility != View.VISIBLE) {
+            noFileText.visibility = View.GONE
+            codeView.visibility = View.VISIBLE
+            loadingSpinner.visibility = View.INVISIBLE
+        }
     }
 
     private fun showNoFileView() {
@@ -232,9 +237,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
     }
 
     override fun onLanguageDetected(language: Language?, relevance: Int) {
-        if (codeView.visibility != View.VISIBLE) {
-            showCodeView()
-        }
+        showCodeView()
         val languageString = "Detected language: ${language}"
         d { languageString }
         showSnackbar(languageString)
@@ -256,7 +259,8 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
 
     override fun onFinishCodeHighlight() {
         d { "finishCodeHighlight " }
-        showSnackbar(getString(R.string.applying_syntax_done))
+        showCodeView()
+        showSnackbar(getString(R.string.applying_formatting_done))
     }
 
     /*

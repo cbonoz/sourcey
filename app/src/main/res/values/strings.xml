@@ -19,7 +19,7 @@
     <string name="saved_settings">Saved Settings</string>
     <string name="applying_syntax">Formatting…</string>
     <string name="applying_syntax_large">Formatting file in background…</string>
-    <string name="applying_syntax_done">Formatting Complete</string>
+    <string name="applying_formatting_done">Formatting Complete</string>
     <string name="loading_file_large">Loading File, large file may take a while…</string>
     <string name="loading_file">Loading File…</string>
     <string name="about">About Sourcey</string>
