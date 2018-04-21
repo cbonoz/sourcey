@@ -64,7 +64,6 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         SourceyApplication.injectionComponent.inject(this)
 
         loadingSpinner = findViewById(R.id.loadingSpinner)
-        showNoFileView()
 
         setSupportActionBar(findViewById(R.id.my_toolbar))
         my_toolbar.inflateMenu(R.menu.menu);
@@ -79,8 +78,9 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
             val lastFile = savedInstanceState.getString(SourceyService.LAST_FILE, "")
             if (lastFile.isNotEmpty()) {
                 loadSourceFile(lastFile)
-                updateCodeView(true)
             }
+        } else {
+            showNoFileView()
         }
     }
 
@@ -191,10 +191,9 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
                     .setShowLineNumber(settings.lineNumber)
                     .setZoomEnabled(settings.zoomEnabled)
                     .apply();
-            return
+        } else {
+            showNoFileView()
         }
-
-        showNoFileView()
     }
 
     override fun onDestroy() {
