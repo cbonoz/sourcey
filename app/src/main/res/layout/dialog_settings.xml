@@ -17,29 +17,6 @@
             android:background="#FFFFBB33"
             android:contentDescription="@string/app_name"/>
 
-
-    <android.support.v7.widget.SwitchCompat
-            android:id="@+id/wrapSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/settingItem"
-            android:text="@string/enable_line_wrap"/>
-
-
-    <android.support.v7.widget.SwitchCompat
-            android:id="@+id/lineSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/settingItem"
-            android:text="@string/show_line_numbers"/>
-
-    <android.support.v7.widget.SwitchCompat
-            android:id="@+id/zoomSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/settingItem"
-            android:text="@string/enable_zoom"/>
-
     <android.support.v7.widget.SwitchCompat
             android:id="@+id/languageSwitch"
             android:layout_width="wrap_content"
@@ -48,18 +25,23 @@
             android:text="@string/language_detection"/>
 
     <TextView
-            android:text="@string/font_size"
-            android:id="@+id/fontSizeTextView"
+            android:text="@string/font"
             style="@style/settingItem"
+            android:id="@+id/fontTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
-    <EditText
-            android:inputType="numberDecimal"
-            android:hint="ex: 14.0"
-            android:id="@+id/fontSizeText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+    <org.angmarch.views.NiceSpinner
+            android:id="@+id/fontSpinner"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:layout_margin="16dp"/>
+
 
     <TextView
             android:text="@string/theme"

@@ -18,14 +18,12 @@ import android.view.ViewTreeObserver
 import android.view.animation.DecelerateInterpolator
 import android.widget.Button
 import android.widget.TextView
-import br.tiagohm.codeview.CodeView
-import br.tiagohm.codeview.Language
-import br.tiagohm.codeview.Theme
 import com.github.ajalt.timberkt.Timber.d
 import com.github.ajalt.timberkt.Timber.e
 import com.github.angads25.filepicker.model.DialogConfigs
 import com.github.angads25.filepicker.model.DialogProperties
 import com.github.angads25.filepicker.view.FilePickerDialog
+import com.sourcey.www.sourcey.R.string.settings
 import com.sourcey.www.sourcey.SourceyApplication
 import com.sourcey.www.sourcey.dialogs.SettingsDialogFragment
 import com.sourcey.www.sourcey.util.PrefManager
@@ -35,13 +33,14 @@ import java.io.File
 import java.nio.charset.Charset
 import javax.inject.Inject
 import com.takusemba.spotlight.SimpleTarget
+import io.github.kbiakov.codeview.adapters.Options
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
 
 
-class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTreeObserver.OnGlobalLayoutListener {
+class MainActivity : AppCompatActivity(), ViewTreeObserver.OnGlobalLayoutListener {
 
     override fun onGlobalLayout() {
         val lastFile = prefManager.getString("lastFile", null)
@@ -71,6 +70,47 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
             prefManager.saveBoolean(SourceyService.FIRST_LAUNCH, false)
         }
 
+        fileContent = "" +
+                "package io.github.kbiakov.codeviewexample;\n" +
+                "\n" +
+                "import android.os.Bundle;\n" +
+                "import android.support.annotation.Nullable;\n" +
+                "import android.support.v7.app.AppCompatActivity;\n" +
+                "import android.util.Log;\n" +
+                "\n" +
+                "import org.jetbrains.annotations.NotNull;\n" +
+                "\n" +
+                "import io.github.kbiakov.codeview.CodeView;\n" +
+                "import io.github.kbiakov.codeview.OnCodeLineClickListener;\n" +
+                "import io.github.kbiakov.codeview.adapters.CodeWithDiffsAdapter;\n" +
+                "import io.github.kbiakov.codeview.adapters.Options;\n" +
+                "import io.github.kbiakov.codeview.highlight.ColorTheme;\n" +
+                "import io.github.kbiakov.codeview.highlight.ColorThemeData;\n" +
+                "import io.github.kbiakov.codeview.highlight.Font;\n" +
+                "import io.github.kbiakov.codeview.highlight.FontCache;\n" +
+                "import io.github.kbiakov.codeview.views.DiffModel;\n" +
+                "\n" +
+                "public class ListingsActivity extends AppCompatActivity {\n" +
+                "\n" +
+                "    @Override\n" +
+                "    protected void onCreate(@Nullable Bundle savedInstanceState) {\n" +
+                "        super.onCreate(savedInstanceState);\n" +
+                "        setContentView(R.layout.activity_listings);\n" +
+                "\n" +
+                "        final CodeView codeView = (CodeView) findViewById(R.id.code_view);\n" +
+                "\n" +
+                "        /*\n" +
+                "         * 1: set code content\n" +
+                "         */\n" +
+                "\n" +
+                "        // auto language recognition\n" +
+                "        codeView.setCode(getString(R.string.listing_js));\n" +
+                "\n" +
+                "        // specify language for code listing\n" +
+                "        codeView.setCode(getString(R.string.listing_py), \"py\");" +
+                "    }\n" +
+                "}"
+
         // If recovering from an event such as a screen rotation.
         if (savedInstanceState != null) {
             val lastFile = savedInstanceState.getString(SourceyService.LAST_FILE, "")
@@ -79,6 +119,8 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
                 updateCodeView(true)
             }
         }
+        updateCodeView(true)
+
     }
 
     private fun addSpotlight() {
@@ -163,40 +205,30 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         }
     }
 
+    private var showedFormatComplete: Boolean = false
+
     fun updateCodeView(refreshCode: Boolean) {
         if (fileContent.isNotEmpty()) {
             noFileText.visibility = View.GONE
             codeView.visibility = View.VISIBLE
 
             val settings = sourceyService.getSettings()
-            val language: Language?
-            if (settings.languageDetection) {
-                language = Language.AUTO
-            } else {
-                language = Language.VIM
-            }
 
-            val themes = sourceyService.getThemes()
+            val options = Options.Default.get(this)
+            options.setTheme(sourceyService.getThemes().get(settings.themeIndex))
+            options.setFont(sourceyService.getFonts().get(settings.fontIndex))
 
-            val theme: Theme
-            if (settings.themeIndex < themes.size) {
-                theme = themes.get(settings.themeIndex)
-            } else {
-                theme = Theme.AGATE
-            }
+            codeView.setOptions(options)
 
             if (refreshCode) {
-                codeView.setCode(fileContent)
+                if (settings.languageDetection) {
+                    codeView.setCode(fileContent) // use auto detection.
+                } else {
+                    codeView.setCode(fileContent, "java")
+                }
+                showedFormatComplete = false
             }
 
-            codeView.setOnHighlightListener(this)
-                    .setTheme(theme)
-                    .setLanguage(language)
-                    .setWrapLine(settings.wrapLine)
-                    .setFontSize(settings.fontSize)
-                    .setShowLineNumber(settings.lineNumber)
-                    .setZoomEnabled(settings.zoomEnabled)
-                    .apply();
         } else {
             noFileText.visibility = View.VISIBLE
             codeView.visibility = View.GONE
@@ -209,43 +241,6 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
     }
 
     private var mProgressDialog: ProgressDialog? = null
-
-    /*
-     * Codeview methods below.
-     * https://github.com/tiagohm/CodeView
-     */
-    override fun onStartCodeHighlight() {
-        d { "startCodeHighlight " }
-        val message: String
-        if (fileContent.length > SourceyService.LARGE_FILE_THRESHOLD) {
-            showSnackbar(getString(R.string.applying_syntax_large))
-        }
-    }
-
-    override fun onLanguageDetected(language: Language?, relevance: Int) {
-        val languageString = "Detected language: ${language}"
-        d { languageString }
-        Toast.makeText(this, languageString, Toast.LENGTH_SHORT).show();
-
-        if (sourceyService.getSettings().languageDetection) {
-            launch(UI) {
-                codeView.setLanguage(language).apply()
-            }
-        }
-    }
-
-    override fun onFontSizeChanged(sizeInPx: Int) {
-        d { "font-size: " + sizeInPx + "px" }
-    }
-
-    override fun onLineClicked(lineNumber: Int, content: String) {
-        d { "line: " + lineNumber + " html: " + content }
-    }
-
-    override fun onFinishCodeHighlight() {
-        d { "finishCodeHighlight " }
-        showSnackbar(getString(R.string.applying_syntax_done))
-    }
 
     /*
      * File permission request below.
@@ -303,12 +298,6 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         val lastFile = prefManager.getString("lastFile", null)
         if (lastFile != null) {
             val infoString = StringBuilder().append("File: ${lastFile}").append("\n")
-            if (codeView.lineCount > 0) {
-                infoString.append("Lines: ${codeView.lineCount}").append("\n")
-            }
-            if (codeView.language != null) {
-                infoString.append("Language Detected: ${codeView.language}").append("\n")
-            }
             val fileInfoText = dialog.findViewById<TextView>(R.id.fileInfoText)
             fileInfoText.setText(infoString.toString())
         } else {

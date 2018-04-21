@@ -34,11 +34,12 @@ repositories {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
-    implementation 'com.android.support:appcompat-v7:27.1.0'
-    implementation 'com.android.support:support-v4:27.1.0'
-    implementation 'com.android.support:design:27.1.0'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:support-v4:27.1.1'
+    implementation 'com.android.support:design:27.1.1'
 
-    implementation 'com.github.tiagohm:CodeView:0.4.0'
+//    implementation 'com.github.tiagohm:CodeView:0.4.0'
+    implementation 'com.github.kbiakov:CodeView-android:1.3.1'
     implementation 'com.github.angads25:filepicker:1.1.1'
     implementation 'com.github.arcadefire:nice-spinner:1.3.1'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.22.5'
@@ -47,7 +48,6 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.2'
     implementation 'com.github.ajalt:timberkt:1.4.0'
     implementation 'com.obsez.android.lib.filechooser:filechooser:1.1.6'
-    implementation 'com.github.kbiakov:CodeView-android:1.3.1'
     implementation 'com.pavelsikun:materialdesignicons:1.0'
     implementation 'com.google.dagger:dagger-android:2.14.1'
     implementation 'com.google.dagger:dagger-android-support:2.14.1' // if you use the support libraries

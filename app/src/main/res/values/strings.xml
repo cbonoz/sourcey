@@ -29,4 +29,5 @@
     <string name="language_detection">Language Detection</string>
     <string name="font_size">Font Size</string>
     <string name="theme">Theme</string>
+    <string name="font">Select Font</string>
 </resources>

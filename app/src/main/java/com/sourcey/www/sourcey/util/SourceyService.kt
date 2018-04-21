@@ -1,9 +1,11 @@
 package com.sourcey.www.sourcey.util
 
-import br.tiagohm.codeview.Theme
+import android.app.Application
+import io.github.kbiakov.codeview.highlight.ColorTheme
+import io.github.kbiakov.codeview.highlight.Font
 import java.util.*
 
-class SourceyService(private val prefManager: PrefManager) {
+class SourceyService(private val app: Application, private val prefManager: PrefManager) {
 
     val random = Random()
 
@@ -11,19 +13,41 @@ class SourceyService(private val prefManager: PrefManager) {
         return random.nextInt(to - from) + from
     }
 
-    fun getThemes(): List<Theme> {
-        return Theme.ALL
-    }
-
-    fun saveSettings(settings: Settings) {
-        prefManager.saveJson("settings", settings)
+    fun saveSettings(setting: Settings) {
+        prefManager.saveJson("setting", setting)
     }
 
     fun getSettings(): Settings {
         return prefManager.getJson(
-                "settings",
+                "setting",
                 Settings::class.java,
-                Settings(true, true, true, false, 0, 14f)
+                Settings(false, 0, 0)
+        )
+    }
+
+    fun getFonts(): List<Font> {
+        return listOf(
+                Font.Default,
+                Font.Monaco,
+                Font.Consolas,
+                Font.CourierNew,
+                Font.DejaVuSansMono,
+                Font.DroidSansMonoSlashed,
+                Font.Inconsolata
+        )
+    }
+
+    fun getFontNames(): List<String> {
+        return getFonts().map {
+            it.name
+        }
+    }
+
+    fun getThemes(): List<ColorTheme> {
+        return listOf(
+                ColorTheme.DEFAULT,
+                ColorTheme.MONOKAI,
+                ColorTheme.SOLARIZED_LIGHT
         )
     }
 
@@ -31,7 +55,6 @@ class SourceyService(private val prefManager: PrefManager) {
         return getThemes().map {
             it.name
         }
-
     }
 
     companion object {

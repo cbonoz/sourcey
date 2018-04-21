@@ -19,6 +19,8 @@ class SourceyApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // train classifier on app start
+        CodeProcessor.init(this);
         Timber.plant(DebugTree())
 //        if (BuildConfig.DEBUG) {
 //            Timber.plant(DebugTree())

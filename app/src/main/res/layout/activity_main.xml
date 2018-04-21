@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<LinearLayout
         android:id="@+id/mainLayout"
         android:orientation="vertical"
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -30,20 +30,11 @@
                 android:text="@string/file_select_help"
                 android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center"/>
 
-        <br.tiagohm.codeview.CodeView
-                android:visibility="gone"
+        <io.github.kbiakov.codeview.CodeView
                 android:id="@+id/codeView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:cv_font_size="14"
-                app:cv_highlight_line_number="36"
-                app:cv_show_line_number="true"
-                app:cv_start_line_number="0"
-                app:cv_wrap_line="true"
-                app:cv_zoom_enable="true">
-        </br.tiagohm.codeview.CodeView>
-
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
 
     </FrameLayout>
 
-</FrameLayout>
+</LinearLayout>
