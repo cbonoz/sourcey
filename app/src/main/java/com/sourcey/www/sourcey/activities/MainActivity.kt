@@ -64,6 +64,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         SourceyApplication.injectionComponent.inject(this)
 
         loadingSpinner = findViewById(R.id.loadingSpinner)
+        showNoFileView()
 
         setSupportActionBar(findViewById(R.id.my_toolbar))
         my_toolbar.inflateMenu(R.menu.menu);
@@ -99,7 +100,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
     }
 
     private var dialog: FilePickerDialog? = null
-    private var loadingSpinner: SpinKitView? = null
+    private lateinit var loadingSpinner: SpinKitView
 
     private fun launchFileDialog() {
         d { "launchFileDialog" }
@@ -133,8 +134,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
 
     private fun loadSourceFile(pathFile: File) {
         d { "loadSourceFile ${pathFile}" }
-        noFileText.visibility = View.GONE
-        loadingSpinner!!.visibility = View.VISIBLE
+        showLoadingView()
 
         job = launch(CommonPool) {
             try {
@@ -144,7 +144,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
                 d { "read fileContent: ${fileContent.length} bytes" }
             } catch (e: Exception) {
                 launch(UI) {
-                    loadingSpinner!!.visibility = View.INVISIBLE
+                    showNoFileView()
                     val errorMessage = "Problem Reading file. ${e.localizedMessage}"
                     e { errorMessage }
                     Toast.makeText(this@MainActivity, errorMessage, Toast.LENGTH_SHORT).show()
@@ -161,10 +161,6 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
 
     fun updateCodeView(refreshCode: Boolean) {
         if (fileContent.isNotEmpty()) {
-            noFileText.visibility = View.GONE
-            codeView.visibility = View.VISIBLE
-            loadingSpinner!!.visibility = View.INVISIBLE
-
             val settings = sourceyService.getSettings()
             val language: Language?
             if (settings.languageDetection) {
@@ -194,11 +190,10 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
                     .setShowLineNumber(settings.lineNumber)
                     .setZoomEnabled(settings.zoomEnabled)
                     .apply();
-        } else {
-            noFileText.visibility = View.VISIBLE
-            codeView.visibility = View.GONE
-            loadingSpinner!!.visibility = View.INVISIBLE
+            return
         }
+
+        showNoFileView()
     }
 
     override fun onDestroy() {
@@ -206,12 +201,30 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         job?.cancel()
     }
 
+    private fun showCodeView() {
+        noFileText.visibility = View.GONE
+        codeView.visibility = View.VISIBLE
+        loadingSpinner.visibility = View.INVISIBLE
+    }
+
+    private fun showNoFileView() {
+        noFileText.visibility = View.VISIBLE
+        codeView.visibility = View.GONE
+        loadingSpinner.visibility = View.INVISIBLE
+    }
+
+    private fun showLoadingView() {
+        noFileText.visibility = View.GONE
+        codeView.visibility = View.INVISIBLE
+        loadingSpinner.visibility = View.VISIBLE
+    }
+
     /*
      * Codeview methods below.
      * https://github.com/tiagohm/CodeView
      */
     override fun onStartCodeHighlight() {
-        loadingSpinner!!.visibility = View.INVISIBLE
+        showCodeView()
         d { "startCodeHighlight " }
         if (fileContent.length > SourceyService.LARGE_FILE_THRESHOLD) {
             showSnackbar(getString(R.string.applying_syntax_large))
@@ -219,9 +232,12 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
     }
 
     override fun onLanguageDetected(language: Language?, relevance: Int) {
+        if (codeView.visibility != View.VISIBLE) {
+            showCodeView()
+        }
         val languageString = "Detected language: ${language}"
         d { languageString }
-        Toast.makeText(this, languageString, Toast.LENGTH_SHORT).show();
+        showSnackbar(languageString)
 
         if (sourceyService.getSettings().languageDetection) {
             launch(UI) {
@@ -321,7 +337,5 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
     private fun showSnackbar(message: String) {
         val snackbar = Snackbar.make(mainLayout, message, Snackbar.LENGTH_SHORT);
         snackbar.show()
-
     }
-
 }
