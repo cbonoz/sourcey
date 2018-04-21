@@ -135,7 +135,8 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
     private fun loadSourceFile(pathFile: File) {
         d { "loadSourceFile ${pathFile}" }
         showLoadingView()
-
+        // Cancel a pre-existing job if it is active.
+        job?.cancel()
         job = launch(CommonPool) {
             try {
                 fileContent = pathFile.bufferedReader(Charset.defaultCharset()).use {
@@ -201,21 +202,16 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         job?.cancel()
     }
 
-    /*
-     * Call function aggressively to ensure user does not get stuck in a perpetual loading screen.
-     */
     private fun showCodeView() {
-        if (codeView.visibility != View.VISIBLE) {
-            noFileText.visibility = View.GONE
-            codeView.visibility = View.VISIBLE
-            loadingSpinner.visibility = View.INVISIBLE
-        }
+        noFileText.visibility = View.GONE
+        codeView.visibility = View.VISIBLE
+        loadingSpinner.visibility = View.GONE
     }
 
     private fun showNoFileView() {
         noFileText.visibility = View.VISIBLE
         codeView.visibility = View.GONE
-        loadingSpinner.visibility = View.INVISIBLE
+        loadingSpinner.visibility = View.GONE
     }
 
     private fun showLoadingView() {
