@@ -3,6 +3,7 @@ package com.sourcey.www.sourcey.activities
 import android.os.Bundle
 import android.app.Dialog
 import android.content.pm.PackageManager
+import android.os.Handler
 import android.support.design.widget.Snackbar
 import com.sourcey.www.sourcey.R
 
@@ -63,7 +64,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         setContentView(R.layout.activity_main)
         SourceyApplication.injectionComponent.inject(this)
 
-        loadingSpinner = findViewById(R.id.loadingSpinner)
+        loadingSpinner = findViewById<SpinKitView>(R.id.loadingSpinner)
 
         setSupportActionBar(findViewById(R.id.my_toolbar))
         my_toolbar.inflateMenu(R.menu.menu);
@@ -179,10 +180,6 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
                 theme = Theme.AGATE
             }
 
-            if (refreshCode) {
-                codeView.setCode(fileContent)
-            }
-
             codeView.setOnHighlightListener(this)
                     .setTheme(theme)
                     .setLanguage(language)
@@ -190,7 +187,13 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
                     .setFontSize(settings.fontSize)
                     .setShowLineNumber(settings.lineNumber)
                     .setZoomEnabled(settings.zoomEnabled)
-                    .apply();
+
+            if (refreshCode) {
+                codeView.setCode(fileContent);
+            }
+
+            codeView.apply();
+
         } else {
             showNoFileView()
         }
@@ -202,9 +205,11 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
     }
 
     private fun showCodeView() {
-        noFileText.visibility = View.GONE
-        codeView.visibility = View.VISIBLE
-        loadingSpinner.visibility = View.GONE
+        launch(UI) {
+            noFileText.visibility = View.GONE
+            codeView.visibility = View.VISIBLE
+            loadingSpinner.visibility = View.GONE
+        }
     }
 
     private fun showNoFileView() {
@@ -219,12 +224,18 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         loadingSpinner.visibility = View.VISIBLE
     }
 
+    private val handler: Handler = Handler()
+    private val longFileNotification = {
+        showSnackbar(getString(R.string.large_file_format_takes_longer))
+    }
+
     /*
-     * Codeview methods below.
-     * https://github.com/tiagohm/CodeView
-     */
+             * Codeview methods below.
+             * https://github.com/tiagohm/CodeView
+             */
     override fun onStartCodeHighlight() {
-        showCodeView()
+//        showCodeView()
+        handler.postDelayed(longFileNotification, 8000)
         d { "startCodeHighlight " }
         if (fileContent.length > SourceyService.LARGE_FILE_THRESHOLD) {
             showSnackbar(getString(R.string.applying_syntax_large))
@@ -253,6 +264,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
     }
 
     override fun onFinishCodeHighlight() {
+        handler.removeCallbacks(longFileNotification)
         d { "finishCodeHighlight " }
         showCodeView()
         showSnackbar(getString(R.string.applying_formatting_done))
