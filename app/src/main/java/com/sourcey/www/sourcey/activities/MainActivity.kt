@@ -230,11 +230,10 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
     }
 
     /*
-             * Codeview methods below.
-             * https://github.com/tiagohm/CodeView
-             */
+     * Codeview methods below.
+     * https://github.com/tiagohm/CodeView
+     */
     override fun onStartCodeHighlight() {
-//        showCodeView()
         handler.postDelayed(longFileNotification, 8000)
         d { "startCodeHighlight " }
         if (fileContent.length > SourceyService.LARGE_FILE_THRESHOLD) {
