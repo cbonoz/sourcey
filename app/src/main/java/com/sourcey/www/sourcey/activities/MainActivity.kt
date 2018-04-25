@@ -3,7 +3,6 @@ package com.sourcey.www.sourcey.activities
 import android.os.Bundle
 import android.app.Dialog
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Handler
 import android.support.design.widget.Snackbar
 import com.sourcey.www.sourcey.R
@@ -136,7 +135,13 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
     private var job: Job? = null
 
     private fun loadSourceFile(pathFile: File, testFile: Boolean = false) {
-        d { "loadSourceFile ${pathFile}" }
+
+        if (pathFile.length() > sourceyService.getMaxFileSize()) {
+            showSnackbar(getString(R.string.file_too_large))
+            return
+        }
+
+        d { "loadSourceFile ${pathFile}, ${pathFile.length()} bytes" }
         showLoadingView()
         // Cancel a pre-existing job if it is active.
         job?.cancel()
@@ -153,7 +158,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
                     }
                     prefManager.saveString("lastFile", pathFile.absolutePath)
                 }
-                d { "read fileContent: ${fileContent.length} bytes" }
+                d { "read fileContent, now: ${fileContent.length} bytes" }
 
                 launch(UI) {
                     updateCodeView(true)

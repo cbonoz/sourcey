@@ -35,8 +35,12 @@ class SourceyService(private val prefManager: PrefManager) {
 
     }
 
+    fun getMaxFileSize(): Long {
+        return LARGE_FILE_THRESHOLD
+    }
+
     companion object {
-        val LARGE_FILE_THRESHOLD = 200000L
+        val LARGE_FILE_THRESHOLD = 400000L // 500 KB
         val LAST_FILE = "lastFile"
         val FIRST_LAUNCH = "firstLaunch"
     }
