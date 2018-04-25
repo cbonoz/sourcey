@@ -1,5 +1,6 @@
 package com.sourcey.www.sourcey.util
 
+import br.tiagohm.codeview.Language
 import br.tiagohm.codeview.Theme
 import java.util.*
 
@@ -23,7 +24,7 @@ class SourceyService(private val prefManager: PrefManager) {
         return prefManager.getJson(
                 "settings",
                 Settings::class.java,
-                Settings(true, true, true, false, 0, 14f)
+                Settings(true, true, true, false, 0, 14f, Language.JAVA)
         )
     }
 

@@ -10,6 +10,7 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.widget.SwitchCompat
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import com.sourcey.www.sourcey.SourceyApplication
@@ -18,6 +19,7 @@ import com.sourcey.www.sourcey.util.Settings
 import com.sourcey.www.sourcey.util.SourceyService
 import javax.inject.Inject
 import android.widget.TextView
+import br.tiagohm.codeview.Language
 import org.angmarch.views.NiceSpinner
 
 
@@ -46,6 +48,7 @@ class SettingsDialogFragment : DialogFragment() {
         val zoomSwitch = view.findViewById<SwitchCompat>(R.id.zoomSwitch)
         val languageSwitch = view.findViewById<SwitchCompat>(R.id.languageSwitch)
         val themeSpinner = view.findViewById<NiceSpinner>(R.id.themeSpinner)
+        val languageSpinner = view.findViewById<NiceSpinner>(R.id.languageSpinner)
 
         val oldSettings = sourceyService.getSettings()
 
@@ -69,6 +72,12 @@ class SettingsDialogFragment : DialogFragment() {
         themeSpinner.selectedIndex = oldSettings.themeIndex
         themeSpinner.dropDownListPaddingBottom = 7
 
+        languageSwitch.setOnCheckedChangeListener { compoundButton, b ->
+            updateLanguageSpinner(languageSwitch, languageSpinner, oldSettings.language)
+        }
+
+        updateLanguageSpinner(languageSwitch, languageSpinner, oldSettings.language)
+
         builder.setView(view).setPositiveButton(getString(R.string.save), { dialog, id ->
 
             val fontText = fontSizeText.text.toString().toFloatOrNull()
@@ -85,7 +94,8 @@ class SettingsDialogFragment : DialogFragment() {
                     zoomSwitch.isChecked,
                     languageSwitch.isChecked,
                     themeSpinner.selectedIndex,
-                    fontSize
+                    fontSize,
+                    Language.values().get(languageSpinner.selectedIndex)
             )
 
             sourceyService.saveSettings(settings)
@@ -98,6 +108,22 @@ class SettingsDialogFragment : DialogFragment() {
                 .setNegativeButton(getString(R.string.cancel), { dialog, id -> this@SettingsDialogFragment.getDialog().cancel() })
 
         return builder.create()
+    }
+
+    private fun updateLanguageSpinner(languageSwitch: SwitchCompat, languageSpinner: NiceSpinner, language: Language) {
+        if (languageSwitch.isChecked) {
+            languageSpinner.visibility = View.GONE
+        } else {
+            languageSpinner.visibility = View.VISIBLE
+            languageSpinner.attachDataSource(Language.values().toList())
+            val i = Language.values().indexOf<Language>(language)
+            if (i >= 0 && i < Language.values().size) {
+                languageSpinner.selectedIndex = i
+            } else {
+                languageSpinner.selectedIndex = 0
+            }
+            languageSpinner.dropDownListPaddingBottom = 7
+        }
     }
 
     abstract inner class TextValidator(private val textView: TextView) : TextWatcher {

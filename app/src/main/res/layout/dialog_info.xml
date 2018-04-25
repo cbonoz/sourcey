@@ -36,25 +36,38 @@
             android:layout_height="wrap_content"
             android:padding="10dp"/>
 
-
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="40dp">
 
-        <View
-                android:id="@+id/left_space"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="0.50"
-                android:background="@color/textColorPrimary"/>
+        <!--<View-->
+                <!--android:id="@+id/left_space"-->
+                <!--android:layout_width="0dp"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:layout_weight="0.50"-->
+                <!--android:background="@color/textColorPrimary"/>-->
+
+        <!--android:paddingStart="15dp"-->
+        <!--android:paddingEnd="15dp"-->
+        <!--android:paddingTop="10dp"-->
+        <!--android:paddingBottom="10dp"-->
 
         <Button
-                android:id="@+id/infoButton"
+                android:id="@+id/loadSampleButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.50"
+                android:textColor="@color/textColorPrimary"
+                android:text="@string/load_sample_file"
+                android:background="@color/md_purple_800"/>
+
+        <Button
+                android:id="@+id/closeButton"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0.50"
                 android:textColor="@color/textColorPrimary"
-                android:text="Ok"
+                android:text="@string/close"
                 android:background="@color/colorPrimaryDark"/>
     </LinearLayout>
 

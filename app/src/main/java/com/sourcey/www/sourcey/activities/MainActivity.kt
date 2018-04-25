@@ -3,6 +3,7 @@ package com.sourcey.www.sourcey.activities
 import android.os.Bundle
 import android.app.Dialog
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Handler
 import android.support.design.widget.Snackbar
 import com.sourcey.www.sourcey.R
@@ -27,6 +28,7 @@ import com.github.angads25.filepicker.model.DialogConfigs
 import com.github.angads25.filepicker.model.DialogProperties
 import com.github.angads25.filepicker.view.FilePickerDialog
 import com.github.ybq.android.spinkit.SpinKitView
+import com.sourcey.www.sourcey.R.id.*
 import com.sourcey.www.sourcey.SourceyApplication
 import com.sourcey.www.sourcey.dialogs.SettingsDialogFragment
 import com.sourcey.www.sourcey.util.PrefManager
@@ -133,17 +135,30 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
 
     private var job: Job? = null
 
-    private fun loadSourceFile(pathFile: File) {
+    private fun loadSourceFile(pathFile: File, testFile: Boolean = false) {
         d { "loadSourceFile ${pathFile}" }
         showLoadingView()
         // Cancel a pre-existing job if it is active.
         job?.cancel()
         job = launch(CommonPool) {
             try {
-                fileContent = pathFile.bufferedReader(Charset.defaultCharset()).use {
-                    it.readText()
+                if (testFile) {
+                    val in_s = resources.openRawResource(R.raw.mergesort)
+                    val b = ByteArray(in_s.available())
+                    in_s.read(b)
+                    fileContent = String(b)
+                } else {
+                    fileContent = pathFile.bufferedReader(Charset.defaultCharset()).use {
+                        it.readText()
+                    }
+                    prefManager.saveString("lastFile", pathFile.absolutePath)
                 }
                 d { "read fileContent: ${fileContent.length} bytes" }
+
+                launch(UI) {
+                    updateCodeView(true)
+                }
+
             } catch (e: Exception) {
                 launch(UI) {
                     showNoFileView()
@@ -151,11 +166,6 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
                     e { errorMessage }
                     Toast.makeText(this@MainActivity, errorMessage, Toast.LENGTH_SHORT).show()
                 }
-            }
-
-            prefManager.saveString("lastFile", pathFile.absolutePath)
-            launch(UI) {
-                updateCodeView(true)
             }
 
         }
@@ -168,7 +178,7 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
             if (settings.languageDetection) {
                 language = Language.AUTO
             } else {
-                language = Language.VIM
+                language = settings.language
             }
 
             val themes = sourceyService.getThemes()
@@ -318,7 +328,13 @@ class MainActivity : AppCompatActivity(), CodeView.OnHighlightListener, ViewTree
         dialog.setContentView(R.layout.dialog_info);
         dialog.setTitle(getString(R.string.about));
         dialog.show();
-        dialog.findViewById<Button>(R.id.infoButton).setOnClickListener {
+        dialog.findViewById<Button>(R.id.closeButton).setOnClickListener {
+            dialog.dismiss()
+        }
+
+        val loadSampleButton = dialog.findViewById<Button>(R.id.loadSampleButton)
+        loadSampleButton.setOnClickListener {
+            loadSourceFile(File(""), true)
             dialog.dismiss()
         }
 
